@@ -1,0 +1,87 @@
+(((+ 1) 2)
+ 3)
+
+(((* 1) 2)
+ 2)
+
+(((- 1) 2)
+ -1)
+
+(((lambda ((x Int)) x) 4)
+  4)
+
+((((lambda ((x Int))
+      (lambda ((y Int)) ((+ x) y)))
+    6) 8)
+  14)
+
+-- Paramètre manquant
+((lambda () 5)
+ Erreur) 
+
+-- Sucre syntaxique
+(((lambda ((x Int) (y Int)) (+ x y)) 6 8)
+ 14)
+
+-- Deux paramètres du même nom
+(((lambda ((x Int) (x Int)) (+ x y)) 6 8)
+ Erreur)
+
+-- Erreur type non déclaré et faux
+(((lambda ((x Bool) (y Int)) (+ x y)) 6 8)
+ Erreur)
+
+-- Let
+((let ((x Int 5)) (+ x x))
+ 10)
+
+((let ((x Int 5)
+       (y Int 8))
+     (+ x y))
+ 13)
+
+-- Ne doit pas produire pas de boucle infinie
+((let ((x Int y)
+       (y Int x))
+     (+ 2 4))
+ 6)
+ 
+((let ((x Int 5)
+       (y Int x))
+     (+ x y))
+ 10)
+
+((let ((x Int y)
+       (y Int 7))
+     (+ x y))
+ 14)
+
+((let ((x (Int -> Int) (lambda ((x Int)) (+ x x)))
+       (y Int 3))
+     (x y))
+ 6)
+
+-- data
+((data ((Bool True False))
+   (let ((x Bool True)) x))
+ (data ((Bool True False)) True)) 
+
+-- Int ne peut pas être redéfini
+((data ((Int A B)) A)
+ Erreur)
+
+-- Data doit être une déclaration top level
+((data ((Bool True False))
+   (let ((x Bool True))
+     (data ((Wrong A B)) 5)))
+  Erreur)
+
+((data ((Bool True False)
+        (ListInt Nil (Cons Int ListInt)))
+   (let ((x Bool True)
+         (if (Bool -> Bool)
+	     (lambda ((x Bool))
+	        (case x ((True False) (False True))))))
+      (if x)))
+  (data ((Bool True False)) False))
+
