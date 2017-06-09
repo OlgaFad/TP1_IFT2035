@@ -115,15 +115,19 @@ lookupVar (_ : xs) sym = lookupVar xs sym
 eval :: Env -> Exp -> Value
 eval _ (EInt x) = VInt x
 eval env (EVar sym) = lookupVar env sym
-eval env (EApp exp1 exp2) =
-  case eval env exp1 of
+eval env (ELam sym t e) = VLam sym e env
+eval env (EApp e1 e2) =
+  let
+    v1 = eval _ e1
+    v2 = eval _ e2
+  in
+  case v1 of
     VInt -> error "Error: an expression cant start with a number"
-    VLam -> eval env exp1
-    VPrim ->
+
   -- do
   --   return eval env0 exp1
   --   return eval env0 exp2  --il faut que sa evalue la valeur des deux exp: exp1 et exp2
-eval env (ELam sym t ex) = VLam sym ex env
+
 
 eval _ _ = error "Error: eval not possible"
 
