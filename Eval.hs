@@ -115,6 +115,7 @@ lookupVar (_ : xs) sym = lookupVar xs sym
 eval :: Env -> Exp -> Value
 eval _ (EInt x) = VInt x
 eval env (EVar sym) = lookupVar env sym
+<<<<<<< HEAD
 eval env (ELam sym t ex) = VLam sym ex env
 eval env (EApp e1 e2) =
   let
