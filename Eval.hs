@@ -25,7 +25,7 @@ instance Show Type where
 -- Le datatype des expressions et valeurs
 ---------------------------------------------------------------------------
 data Exp = EInt Int
-         | EVar Symbol
+         | EVar Symbol --"x", "+"
          | EApp Exp Exp
          | ELam Symbol Type Exp
          deriving (Eq)
@@ -115,18 +115,34 @@ lookupVar (_ : xs) sym = lookupVar xs sym
 eval :: Env -> Exp -> Value
 eval _ (EInt x) = VInt x
 eval env (EVar sym) = lookupVar env sym
-eval env (EApp exp1 exp2) =
-  case eval env exp1 of
-    VInt -> error "Error: an expression cant start with a number"
-    VLam -> eval env exp1
-    VPrim ->
-  -- do
-  --   return eval env0 exp1
-  --   return eval env0 exp2  --il faut que sa evalue la valeur des deux exp: exp1 et exp2
 eval env (ELam sym t ex) = VLam sym ex env
+eval env (EApp e1 e2) =
+  let
+    -- (EApp (EApp (EVar "+") (EInt 42)) (EInt 31))
+    v2 = eval env e2 --EInt 31 = 31
+    v1 = eval env e1 --EApp (EVar "+") (EInt 42)
+    --v2.1 = eval env e2 -- EInt 42 = 42
+    --v1.1 =  eval env e1 -- EVar "+"
+    --VPrim: (Value(v2.1)->Value(Value(v2)->Value(v2 v1.1 v2.1)))
+    --VPrim: (Value(42) -> Value(Value(31) -> Value(42+31)))
+    --(v1.1 (v2.1)) v2
+
+
+  in case v1 of
+      VInt x -> error "Error: an expression cant start with a number"
+      VPrim f -> f v2
+      VLam sym ex env -> --boucle a l'infini
+            let env = env ++ [(sym, v2)]
+            in eval env ex
+
+  -- where
+  --   findSym :: Exp -> Symbol
+  --   findSym (EApp e1 e2) = findSym(e1)
+  --   findSym (ELam sym t e) = sym
+  --   findSym (EVar sym) = sym
+  --   findSym _ = error "Error: symbol is not applicable"
 
 eval _ _ = error "Error: eval not possible"
-
 
 ---------------------------------------------------------------------------
 -- Fonction pour la vérification de type
