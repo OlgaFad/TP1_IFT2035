@@ -163,4 +163,6 @@ lookupType (_ : xs) sym = lookupType xs sym
 typeCheck :: Tenv -> Exp -> Either Error Type
 typeCheck _ (EInt x) = Right TInt
 typeCheck env (EVar sym) = lookupType env sym
-typeCheck _ _ = error "Oups ..."
+
+
+typeCheck _ _ = error "Oups ..."    
