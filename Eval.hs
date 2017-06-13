@@ -115,7 +115,6 @@ lookupVar (_ : xs) sym = lookupVar xs sym
 eval :: Env -> Exp -> Value
 eval _ (EInt x) = VInt x
 eval env (EVar sym) = lookupVar env sym
-<<<<<<< HEAD
 eval env (ELam sym t ex) = VLam sym ex env
 eval env (EApp e1 e2) =
   let
@@ -128,13 +127,16 @@ eval env (EApp e1 e2) =
     --VPrim: (Value(42) -> Value(Value(31) -> Value(42+31)))
     --(v1.1 (v2.1)) v2
 
-
+--(EApp (EApp (ELam ("x") TInt (ELam ("y") TInt (EVar "x"))) (EInt 42)) (EInt 31))
+-- (ELam ("x") TInt (ELam ("y") TInt (EVar "x"))) (EInt 42))
+-- ELam ("y") TInt (EVar "x") avec x:42
+-- (ELam ("x") TInt (EInt 42)) (EInt 42))
   in case v1 of
       VInt x -> error "Error: an expression cant start with a number"
       VPrim f -> f v2
       VLam sym ex env -> --boucle a l'infini
-            let env = env ++ [(sym, v2)]
-            in eval env ex
+            let envf = (sym, v2) : env
+            in eval envf ex
 
   -- where
   --   findSym :: Exp -> Symbol
