@@ -104,7 +104,7 @@ sexp2Exp _ = Left "Syntax Error : Ill formed Sexp"
 
 ---------------------------------------------------------------------------
 -- Fonction d'évaluation
--- Vous allez devoir modifier eval
+-- Complète
 ---------------------------------------------------------------------------
 
 lookupVar :: [(Symbol, Value)] -> Symbol -> Value
@@ -138,13 +138,6 @@ eval env (EApp e1 e2) =
             let envf = (sym, v2) : env
             in eval envf ex
 
-  -- where
-  --   findSym :: Exp -> Symbol
-  --   findSym (EApp e1 e2) = findSym(e1)
-  --   findSym (ELam sym t e) = sym
-  --   findSym (EVar sym) = sym
-  --   findSym _ = error "Error: symbol is not applicable"
-
 eval _ _ = error "Error: eval not possible"
 
 ---------------------------------------------------------------------------
@@ -165,6 +158,4 @@ lookupType (_ : xs) sym = lookupType xs sym
 typeCheck :: Tenv -> Exp -> Either Error Type
 typeCheck _ (EInt x) = Right TInt
 typeCheck env (EVar sym) = lookupType env sym
-
-
-typeCheck _ _ = error "Oups ..."    
+typeCheck _ _ = error "Oups ..."
