@@ -158,4 +158,13 @@ lookupType (_ : xs) sym = lookupType xs sym
 typeCheck :: Tenv -> Exp -> Either Error Type
 typeCheck _ (EInt x) = Right TInt
 typeCheck env (EVar sym) = lookupType env sym
+-- typeCheck env (EApp e1 e2) =
+--   do
+--     t1 <- typeCheck env e1
+--     t2 <- typeCheck env e2
+--     if t1 == Type && t2 == Type
+--       then Right (TArrow t1 t2)
+--       else Left "Expecting integers"
+
+-- typeCheck env (ELam sym t ex) =
 typeCheck _ _ = error "Oups ..."
