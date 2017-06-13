@@ -28,6 +28,7 @@ data Exp = EInt Int
          | EVar Symbol --"x", "+"
          | EApp Exp Exp
          | ELam Symbol Type Exp
+         | ELet [(Symbol, Type, Exp)] Exp
          deriving (Eq)
 
 data Value = VInt Int
@@ -97,7 +98,14 @@ sexp2Exp (SList ((SSym "lambda") :
 sexp2Exp (SList (func : arg : [])) = do
   func' <- sexp2Exp func
   arg' <- sexp2Exp arg
-  return $ EApp func' arg'
+  return  EApp func' arg'
+
+sexp2Exp (SList ((Sym "let") : (SList ((SList ((SSym var) : t : ex: [])) : [])) : body : [])) = do
+  body' <- sexp2Exp body
+  t' <- sexp2type t
+  ex' <- sexp2Exp ex
+  return $ ELet [(var, t', ex')] body'
+  -- | ELet [(Symbol, Type, Exp)] Exp
 
 sexp2Exp _ = Left "Syntax Error : Ill formed Sexp"
 
@@ -116,25 +124,20 @@ eval :: Env -> Exp -> Value
 eval _ (EInt x) = VInt x
 eval env (EVar sym) = lookupVar env sym
 eval env (ELam sym t ex) = VLam sym ex env
+
+eval env (ELet [(sym, t, ex)] body =
+  let envf = (sym, (eval ex)) : env
+  in VLam sym body envf
+
 eval env (EApp e1 e2) =
   let
-    -- (EApp (EApp (EVar "+") (EInt 42)) (EInt 31))
-    v2 = eval env e2 --EInt 31 = 31
-    v1 = eval env e1 --EApp (EVar "+") (EInt 42)
-    --v2.1 = eval env e2 -- EInt 42 = 42
-    --v1.1 =  eval env e1 -- EVar "+"
-    --VPrim: (Value(v2.1)->Value(Value(v2)->Value(v2 v1.1 v2.1)))
-    --VPrim: (Value(42) -> Value(Value(31) -> Value(42+31)))
-    --(v1.1 (v2.1)) v2
+    v2 = eval env e2
+    v1 = eval env e1
 
---(EApp (EApp (ELam ("x") TInt (ELam ("y") TInt (EVar "x"))) (EInt 42)) (EInt 31))
--- (ELam ("x") TInt (ELam ("y") TInt (EVar "x"))) (EInt 42))
--- ELam ("y") TInt (EVar "x") avec x:42
--- (ELam ("x") TInt (EInt 42)) (EInt 42))
   in case v1 of
       VInt x -> error "Error: an expression cant start with a number"
       VPrim f -> f v2
-      VLam sym ex env -> --boucle a l'infini
+      VLam sym ex env ->
             let envf = (sym, v2) : env
             in eval envf ex
 

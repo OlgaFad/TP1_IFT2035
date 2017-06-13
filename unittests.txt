@@ -56,7 +56,7 @@
      (+ x y))
  14)
 
-((let ((x (Int -> Int) (lambda ((x Int)) (+ x x)))
+((let ((x (Int Int) (lambda ((x Int)) (+ x x)))
        (y Int 3))
      (x y))
  6)
@@ -79,7 +79,7 @@
 ((data ((Bool True False)
         (ListInt Nil (Cons Int ListInt)))
    (let ((x Bool True)
-         (if (Bool -> Bool)
+         (if (Bool Bool)
 	     (lambda ((x Bool))
 	        (case x ((True False) (False True))))))
       (if x)))
