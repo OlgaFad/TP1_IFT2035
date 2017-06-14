@@ -99,6 +99,17 @@ sexp2Exp (SList (func : arg : [])) = do
   arg' <- sexp2Exp arg
   return $ EApp func' arg'
 
+--sexp2Exp (SList (func : _ : arg)) = do
+ --   ex' <- sexp2Exp (SList (arg) : [])
+--    func' <- sexp2Exp func
+--    return $ EApp func' arg'
+    
+--doBeeDo (EApp func arg) = do
+   -- EApp func arg 
+
+
+  
+  
 sexp2Exp _ = Left "Syntax Error : Ill formed Sexp"
 
 
@@ -158,12 +169,29 @@ lookupType (_ : xs) sym = lookupType xs sym
 typeCheck :: Tenv -> Exp -> Either Error Type
 typeCheck _ (EInt x) = Right TInt
 typeCheck env (EVar sym) = lookupType env sym
-typeCheck env (EApp ex1 ex2) = do
-        let t1 = typeCheck env ex1 
-            t2 = typeCheck env ex2
-            in case t1 of
+typeCheck env (ELam sym t body) = 
+    let t2 = typeCheck ((sym,t) : env) body
+    in case t2 of
+        Left err -> Left err
+        Right t2' -> Right (TArrow t t2')
+        
+typeCheck env (EApp ex1 ex2) =
+    let t1 = typeCheck env ex1
+        t2 = typeCheck env ex2
+    
+    
+    in case t1 of
+        Left error -> Left error
+        Right (TArrow a b) -> 
+            case t2 of 
                 Left error -> Left error
-                Right (TArrow a b) -> Right (TArrow a b)
-                
+                Right (TArrow c d) -> if a == c then Right b else Left "type invalid"
+        Right _ -> Left "Type invalid"
+        
+    -- t1 = typeCheck env ex1 
+        --    t2 = typeCheck env ex2
+         --   in case t1 of
+              --  Left error -> Left error
+                --Right (TArrow a b) -> Right (TArrow a b)
                 
 typeCheck _ _ = error "Oups ..."
