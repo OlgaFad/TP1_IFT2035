@@ -172,7 +172,6 @@ lookupType (_ : xs) sym = lookupType xs sym
 typeCheck :: Tenv -> Exp -> Either Error Type
 typeCheck _ (EInt x) = Right TInt
 typeCheck env (EVar sym) = lookupType env sym
-<<<<<<< HEAD
 typeCheck env (ELam sym t body) = 
     let t2 = typeCheck ((sym,t) : env) body
     in case t2 of
@@ -180,10 +179,10 @@ typeCheck env (ELam sym t body) =
         Right t2' -> Right (TArrow t t2')
         
 typeCheck env (EApp ex1 ex2) =
+    
     let t1 = typeCheck env ex1
         t2 = typeCheck env ex2
-    
-    
+        
     in case t1 of
         Left error -> Left error
         Right (TArrow a b) -> 
@@ -199,14 +198,3 @@ typeCheck env (EApp ex1 ex2) =
                 --Right (TArrow a b) -> Right (TArrow a b)
                 
 typeCheck _ _ = error "Oups ..."
-=======
-typeCheck env (EApp ex1 ex2) = do
-        let t1 = typeCheck env ex1
-
-            t2 = typeCheck env ex2
-            in case t1 of
-                Left error -> Left error
-                Right (TArrow a b) -> Right (TArrow a b)
-
-typeCheck _ _ = error "Oups ..."
->>>>>>> 055910219422f1765a70cdcc0830fdba709348c6
