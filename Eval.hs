@@ -81,12 +81,15 @@ sexp2type _ = Left "Ill formed type"
 reservedKeywords :: [Symbol]
 reservedKeywords = ["lambda", "let", "case", "data", "Erreur"]
 
-sexp2Exp :: Sexp -> Either Error Exp
+sexp2Exp :: Sexp -> Either Error  Exp
 sexp2Exp (SNum x) = Right $ EInt x
 sexp2Exp (SSym ident) | ident `elem` reservedKeywords
   = Left $ ident ++ " is a reserved keyword"
 sexp2Exp (SSym ident) = Right $ EVar ident
-sexp2Exp (SList ((SSym "lambda") : (SList ((SList ((SSym var) : t : [])) : [])) : body : [])) = do
+sexp2Exp (SList ((SSym "lambda") :
+                 (SList ((SList ((SSym var) : t : [])) : [])) :
+                 body :
+                 [])) = do
   body' <- sexp2Exp body
   t' <- sexp2type t
   return $ ELam var t' body'
@@ -98,32 +101,13 @@ sexp2Exp (SList ((SSym "lambda") :
 sexp2Exp (SList (func : arg : [])) = do
   func' <- sexp2Exp func
   arg' <- sexp2Exp arg
-  return  EApp func' arg'
+  return $ EApp func' arg'
 
-sexp2Exp (SList ((Sym "let") : (SList ((SList ((SSym var) : t : ex: [])) : [])) : body : [])) = do
-  body' <- sexp2Exp body
-  t' <- sexp2type t
-  ex' <- sexp2Exp ex
-  return $ ELet [(var, t', ex')] body'
-  -- | ELet [(Symbol, Type, Exp)] Exp
-
---sexp2Exp (SList (func : _ : arg)) = do
- --   ex' <- sexp2Exp (SList (arg) : [])
---    func' <- sexp2Exp func
---    return $ EApp func' arg'
-    
---doBeeDo (EApp func arg) = do
-   -- EApp func arg 
-
-
-  
-  
 sexp2Exp _ = Left "Syntax Error : Ill formed Sexp"
 
 
 ---------------------------------------------------------------------------
 -- Fonction d'évaluation
--- Complète
 ---------------------------------------------------------------------------
 
 lookupVar :: [(Symbol, Value)] -> Symbol -> Value
@@ -136,9 +120,9 @@ eval _ (EInt x) = VInt x
 eval env (EVar sym) = lookupVar env sym
 eval env (ELam sym t ex) = VLam sym ex env
 
-eval env (ELet [(sym, t, ex)] body =
-  let envf = (sym, (eval ex)) : env
-  in VLam sym body envf
+-- eval env (ELet [(sym, t, ex)] body =
+--   let envf = (sym, (eval ex)) : env
+--   in VLam sym body envf
 
 eval env (EApp e1 e2) =
   let
@@ -148,9 +132,8 @@ eval env (EApp e1 e2) =
   in case v1 of
       VInt x -> error "Error: an expression cant start with a number"
       VPrim f -> f v2
-      VLam sym ex env ->
-            let envf = (sym, v2) : env
-            in eval envf ex
+      VLam sym ex env -> eval ((sym, v2): env) ex
+
 
 eval _ _ = error "Error: eval not possible"
 
@@ -172,29 +155,26 @@ lookupType (_ : xs) sym = lookupType xs sym
 typeCheck :: Tenv -> Exp -> Either Error Type
 typeCheck _ (EInt x) = Right TInt
 typeCheck env (EVar sym) = lookupType env sym
-typeCheck env (ELam sym t body) = 
+typeCheck env (ELam sym t body) =
     let t2 = typeCheck ((sym,t) : env) body
     in case t2 of
         Left err -> Left err
         Right t2' -> Right (TArrow t t2')
-        
+
 typeCheck env (EApp ex1 ex2) =
-    
+
     let t1 = typeCheck env ex1
         t2 = typeCheck env ex2
-        
+
     in case t1 of
         Left error -> Left error
-        Right (TArrow a b) -> 
-            case t2 of 
+        Right (TArrow a b) ->
+            case t2 of
                 Left error -> Left error
-                Right (TArrow c d) -> if a == c then Right b else Left "type invalid"
+                Right b -> Right (TArrow a b)
+                Right _ -> Left "Type invalid"
+
         Right _ -> Left "Type invalid"
-        
-    -- t1 = typeCheck env ex1 
-        --    t2 = typeCheck env ex2
-         --   in case t1 of
-              --  Left error -> Left error
-                --Right (TArrow a b) -> Right (TArrow a b)
-                
+
+
 typeCheck _ _ = error "Oups ..."
