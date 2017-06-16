@@ -93,6 +93,18 @@ sexp2Exp (SList ((SSym "lambda") :
   body' <- sexp2Exp body
   t' <- sexp2type t
   return $ ELam var t' body'
+
+--Sucre syntaxique pour la fonction lambda
+sexp2Exp (SList ((SSym "lambda") :
+                 (SList ((SList ((SSym var1) : t1 : (SSym var2) : t2: [])) : [] )):
+                 body :
+                 [])) = do
+  body' <- sexp2Exp (SList ((SSym "lambda"):
+                              (SList ((SList ((SSym var2): t2: []): [])) :
+                              body: [])))
+  t' <- sexp2type t1
+  return $ ELam var1 t' body'
+
 sexp2Exp (SList ((SSym "lambda") :
                  (SList []) :
                  _ :
