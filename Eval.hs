@@ -81,27 +81,34 @@ sexp2type _ = Left "Ill formed type"
 reservedKeywords :: [Symbol]
 reservedKeywords = ["lambda", "let", "case", "data", "Erreur"]
 
+
 sexp2Exp :: Sexp -> Either Error  Exp
 sexp2Exp (SNum x) = Right $ EInt x
 sexp2Exp (SSym ident) | ident `elem` reservedKeywords
   = Left $ ident ++ " is a reserved keyword"
 sexp2Exp (SSym ident) = Right $ EVar ident
+
+
 sexp2Exp (SList ((SSym "lambda") :
-                 (SList ((SList ((SSym var) : t : [])) : [])) :
-                 body :
-                 [])) = do
+                 (SList
+                  ((SList
+                    ((SSym var) : t : [])) : [])) :
+                  body :
+                  [])) = do
   body' <- sexp2Exp body
   t' <- sexp2type t
   return $ ELam var t' body'
 
 --Sucre syntaxique pour la fonction lambda
 sexp2Exp (SList ((SSym "lambda") :
-                 (SList ((SList ((SSym var1) : t1 : (SSym var2) : t2: [])) : [] )):
-                 body :
-                 [])) = do
+                 (SList
+                  ((SList ((SSym var1) : t1 :[])) : (SList ((SSym var2) : t2 :[])) : [])) :
+                  body :
+                  [])) = do
   body' <- sexp2Exp (SList ((SSym "lambda"):
                               (SList ((SList ((SSym var2): t2: []): [])) :
-                              body: [])))
+                                body:
+                                  [])))
   t' <- sexp2type t1
   return $ ELam var1 t' body'
 
@@ -110,9 +117,16 @@ sexp2Exp (SList ((SSym "lambda") :
                  _ :
                  [])) = Left "Syntax Error : No parameter"
 
+-- sexp (SList (SList (func:)))
+
 sexp2Exp (SList (func : arg : [])) = do
   func' <- sexp2Exp func
   arg' <- sexp2Exp arg
+  return $ EApp func' arg'
+
+sexp2Exp (SList (func : arg1 : arg2 : [])) = do
+  func' <- sexp2Exp (SList (func : arg2 : []))
+  arg' <- sexp2Exp arg1
   return $ EApp func' arg'
 
 sexp2Exp _ = Left "Syntax Error : Ill formed Sexp"
