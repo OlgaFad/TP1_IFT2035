@@ -118,7 +118,7 @@ sexp2Exp (SList ((SSym "lambda") :
                  [])) = Left "Syntax Error : No parameter"
 
 --LET
-sexp2Exp (SList ((SSym "let"): (SList (SList( (SSym var): t: ex): []) ): body)) = do
+sexp2Exp (SList ((SSym "let"): (SList (SList( (SSym var): t: ex: [] ): []) ): body: [])) = do
   t' <- sexp2type t
   ex' <- sexp2Exp ex
   body' <- sexp2Exp body
@@ -166,6 +166,8 @@ eval env (EApp e1 e2) =
       VPrim f -> f v2
       VLam sym ex env -> eval ((sym, v2): env) ex
 
+eval env (ELet [(sym, t, ex)] body) =
+  eval ((sym, (eval env ex)): env) body
 
 eval _ _ = error "Error: eval not possible"
 
@@ -208,5 +210,8 @@ typeCheck env (EApp ex1 ex2) =
 
         Right _ -> Left "Type invalid"
 
+typeCheck env (ELet [(sym, t, ex)] body) =
+
+    typeCheck ((sym,t): env) body
 
 typeCheck _ _ = error "Oups ..."
