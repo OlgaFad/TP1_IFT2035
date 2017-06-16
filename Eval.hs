@@ -124,6 +124,12 @@ sexp2Exp (SList ((SSym "let"): (SList (SList( (SSym var): t: ex: [] ): []) ): bo
   body' <- sexp2Exp body
   return $ ELet [(var, t', ex')] body'
 
+sexp2Exp (SList ((SSym "let"): (SList (SList( (SSym var1): t1: ex1: [] ): SList( (SSym var2): t2: ex2: [] ): []) ): body: [])) = do
+  t' <- sexp2type t1
+  ex' <- sexp2Exp ex1
+  body' <- sexp2Exp (SList ((SSym "let"): (SList (SList( (SSym var2): t2: ex2: [] ): []) ): body: []))
+  return $ ELet [(var1, t', ex')] body'
+
 sexp2Exp (SList (func : arg : [])) = do
   func' <- sexp2Exp func
   arg' <- sexp2Exp arg
