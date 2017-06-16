@@ -117,13 +117,19 @@ sexp2Exp (SList ((SSym "lambda") :
                  _ :
                  [])) = Left "Syntax Error : No parameter"
 
--- sexp (SList (SList (func:)))
+--LET
+sexp2Exp (SList ((SSym "let"): (SList (SList( (SSym var): t: ex): []) ): body)) = do
+  t' <- sexp2type t
+  ex' <- sexp2Exp ex
+  body' <- sexp2Exp body
+  return $ ELet [(var, t', ex')] body'
 
 sexp2Exp (SList (func : arg : [])) = do
   func' <- sexp2Exp func
   arg' <- sexp2Exp arg
   return $ EApp func' arg'
 
+--sucre syntaxique
 sexp2Exp (SList (func : arg1 : arg2 : [])) = do
   func' <- sexp2Exp (SList (func : arg2 : []))
   arg' <- sexp2Exp arg1
