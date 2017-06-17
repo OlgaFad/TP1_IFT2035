@@ -143,17 +143,6 @@ sexp2Exp (SList (func : arg1 : arg2 : [])) = do
   return $ EApp func' arg'
 
 sexp2Exp _ = Left "Syntax Error : Ill formed Sexp"
-    
-
-sexp2Exp (SList ((SSym "data"): (SList val : [])) ex) = do
-    val' <- sexp2Exp 
-    rest <- sexp2Exp ex
-    return $ EData
-    
-    
-sexp2Exp (SList ((SSym "data"): (SList val : [])) ex) = do
-    val' <- sexp2Exp ((SList (val1 : [])) ex)
-    return $ EData
 
 ---------------------------------------------------------------------------
 -- Fonction d'évaluation
