@@ -13,6 +13,7 @@ import Parseur
 ---------------------------------------------------------------------------
 data Type = TInt
           | TArrow Type Type
+          | TData Value
           deriving (Eq)
 
 instance Show Type where
@@ -29,6 +30,7 @@ data Exp = EInt Int
          | EApp Exp Exp
          | ELam Symbol Type Exp
          | ELet [(Symbol, Type, Exp)] Exp
+         | EData [Value] Exp
          deriving (Eq)
 
 data Value = VInt Int
@@ -171,6 +173,11 @@ eval env (EApp e1 e2) =
 
 eval env (ELet [(sym, t, ex)] body) =
   eval ((sym, (eval env ex)): env) body
+
+eval env (EData [v] body) = do
+
+  return expression
+
 
 eval _ _ = error "Error: eval not possible"
 
