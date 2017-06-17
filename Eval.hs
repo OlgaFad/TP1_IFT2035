@@ -30,7 +30,7 @@ data Exp = EInt Int
          | EApp Exp Exp
          | ELam Symbol Type Exp
          | ELet [(Symbol, Type, Exp)] Exp
-         | EData [Value] Exp
+         | EData [Symbol] Exp
          deriving (Eq)
 
 data Value = VInt Int
@@ -146,6 +146,15 @@ sexp2Exp (SList (func : arg : [])) = do
 
 sexp2Exp _ = Left "Syntax Error : Ill formed Sexp"
 
+-- sexp2Exp (SList ((SSym "data"): (SList val : [])) ex) = do
+--     val' <- sexp2Exp
+--     rest <- sexp2Exp ex
+--     return $ EData
+--
+--
+-- sexp2Exp (SList ((SSym "data"): (SList val : [])) ex) = do
+--     val' <- sexp2Exp ((SList (val1 : [])) ex)
+--     return $ EData
 
 ---------------------------------------------------------------------------
 -- Fonction d'évaluation
@@ -174,20 +183,11 @@ eval env (EApp e1 e2) =
 eval env (ELet [(sym, t, ex)] body) =
   eval ((sym, (eval env ex)): env) body
 
-  -- eval (EData (SList val : []) ex) = do
-  --     val' <- sexp2Exp val
-  --     rest <- sexp2Exp ex
-  --     return $ EData
-  --
-  --
-  -- eval (EData (SList (val1 : val2 : [])) ex) = do
-  --     val' <- sexp2Exp ((SList (val1 : [])) ex)
-  --     return $ EData
-
-eval env (EData [v] body) = do
-
-
-  return expression
+--
+-- eval env (EData [v] body) = do
+--
+--
+--   return expression
 
 
 eval _ _ = error "Error: eval not possible"
@@ -235,8 +235,8 @@ typeCheck env (ELet [(sym, t, ex)] body) =
 
   typeCheck ((sym,t): env) body
 
-typeCheck env (EData [v] body) =
+typeCheck env (EData [t, [sym]] body) = do
 
-  typeCheck (: env) body
+  typeCheck ((sym:t):env) body
 
 typeCheck _ _ = error "Oups ..."
