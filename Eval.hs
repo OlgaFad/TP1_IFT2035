@@ -118,27 +118,28 @@ sexp2Exp (SList ((SSym "lambda") :
                  [])) = Left "Syntax Error : No parameter"
 
 --LET
-sexp2Exp (SList ((SSym "let"): (SList (SList( (SSym var): t: ex: [] ): []) ): body: [])) = do
-  t' <- sexp2type t
-  ex' <- sexp2Exp ex
-  body' <- sexp2Exp body
-  return $ ELet [(var, t', ex')] body'
-
 sexp2Exp (SList ((SSym "let"): (SList (SList( (SSym var1): t1: ex1: [] ): SList( (SSym var2): t2: ex2: [] ): []) ): body: [])) = do
   t' <- sexp2type t1
   ex' <- sexp2Exp ex1
   body' <- sexp2Exp (SList ((SSym "let"): (SList (SList( (SSym var2): t2: ex2: [] ): []) ): body: []))
   return $ ELet [(var1, t', ex')] body'
 
-sexp2Exp (SList (func : arg : [])) = do
-  func' <- sexp2Exp func
-  arg' <- sexp2Exp arg
-  return $ EApp func' arg'
+sexp2Exp (SList ((SSym "let"): (SList (SList( (SSym var): t: ex: [] ): []) ): body: [])) = do
+  t' <- sexp2type t
+  ex' <- sexp2Exp ex
+  body' <- sexp2Exp body
+  return $ ELet [(var, t', ex')] body'
+
 
 --sucre syntaxique
 sexp2Exp (SList (func : arg1 : arg2 : [])) = do
   func' <- sexp2Exp (SList (func : arg2 : []))
   arg' <- sexp2Exp arg1
+  return $ EApp func' arg'
+
+sexp2Exp (SList (func : arg : [])) = do
+  func' <- sexp2Exp func
+  arg' <- sexp2Exp arg
   return $ EApp func' arg'
 
 sexp2Exp _ = Left "Syntax Error : Ill formed Sexp"
@@ -157,10 +158,6 @@ eval :: Env -> Exp -> Value
 eval _ (EInt x) = VInt x
 eval env (EVar sym) = lookupVar env sym
 eval env (ELam sym t ex) = VLam sym ex env
-
--- eval env (ELet [(sym, t, ex)] body =
---   let envf = (sym, (eval ex)) : env
---   in VLam sym body envf
 
 eval env (EApp e1 e2) =
   let
