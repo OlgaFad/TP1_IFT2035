@@ -145,6 +145,15 @@ sexp2Exp (SList (func : arg1 : arg2 : [])) = do
 sexp2Exp _ = Left "Syntax Error : Ill formed Sexp"
     
 
+sexp2Exp (SList ((SSym "data"): (SList val : [])) ex) = do
+    val' <- sexp2Exp 
+    rest <- sexp2Exp ex
+    return $ EData
+    
+    
+sexp2Exp (SList ((SSym "data"): (SList val : [])) ex) = do
+    val' <- sexp2Exp ((SList (val1 : [])) ex)
+    return $ EData
 
 ---------------------------------------------------------------------------
 -- Fonction d'évaluation
@@ -159,17 +168,6 @@ eval :: Env -> Exp -> Value
 eval _ (EInt x) = VInt x
 eval env (EVar sym) = lookupVar env sym
 eval env (ELam sym t ex) = VLam sym ex env
-
-
-eval (EData (SList val : []) ex) = do
-    val' <- sexp2Exp val
-    rest <- sexp2Exp ex
-    return $ EData
-    
-    
-eval (EData (SList (val1 : val2 : [])) ex) = do
-    val' <- sexp2Exp ((SList (val1 : [])) ex)
-    return $ EData
     
 -- eval env (ELet [(sym, t, ex)] body =
 --   let envf = (sym, (eval ex)) : env
