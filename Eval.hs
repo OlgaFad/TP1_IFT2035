@@ -174,7 +174,18 @@ eval env (EApp e1 e2) =
 eval env (ELet [(sym, t, ex)] body) =
   eval ((sym, (eval env ex)): env) body
 
+  -- eval (EData (SList val : []) ex) = do
+  --     val' <- sexp2Exp val
+  --     rest <- sexp2Exp ex
+  --     return $ EData
+  --
+  --
+  -- eval (EData (SList (val1 : val2 : [])) ex) = do
+  --     val' <- sexp2Exp ((SList (val1 : [])) ex)
+  --     return $ EData
+
 eval env (EData [v] body) = do
+
 
   return expression
 
@@ -222,6 +233,10 @@ typeCheck env (EApp ex1 ex2) =
 
 typeCheck env (ELet [(sym, t, ex)] body) =
 
-    typeCheck ((sym,t): env) body
+  typeCheck ((sym,t): env) body
+
+typeCheck env (EData [v] body) =
+
+  typeCheck (: env) body
 
 typeCheck _ _ = error "Oups ..."
