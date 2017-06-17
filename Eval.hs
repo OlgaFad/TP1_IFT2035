@@ -29,6 +29,7 @@ data Exp = EInt Int
          | EApp Exp Exp
          | ELam Symbol Type Exp
          | ELet [(Symbol, Type, Exp)] Exp
+         | EData [Value] Exp
          deriving (Eq)
 
 data Value = VInt Int
@@ -83,11 +84,11 @@ reservedKeywords = ["lambda", "let", "case", "data", "Erreur"]
 
 
 sexp2Exp :: Sexp -> Either Error  Exp
+
 sexp2Exp (SNum x) = Right $ EInt x
 sexp2Exp (SSym ident) | ident `elem` reservedKeywords
   = Left $ ident ++ " is a reserved keyword"
 sexp2Exp (SSym ident) = Right $ EVar ident
-
 
 sexp2Exp (SList ((SSym "lambda") :
                  (SList
@@ -142,6 +143,7 @@ sexp2Exp (SList (func : arg1 : arg2 : [])) = do
   return $ EApp func' arg'
 
 sexp2Exp _ = Left "Syntax Error : Ill formed Sexp"
+    
 
 
 ---------------------------------------------------------------------------
@@ -158,6 +160,17 @@ eval _ (EInt x) = VInt x
 eval env (EVar sym) = lookupVar env sym
 eval env (ELam sym t ex) = VLam sym ex env
 
+
+eval (EData (SList val : []) ex) = do
+    val' <- sexp2Exp val
+    rest <- sexp2Exp ex
+    return $ EData
+    
+    
+eval (EData (SList (val1 : val2 : [])) ex) = do
+    val' <- sexp2Exp ((SList (val1 : [])) ex)
+    return $ EData
+    
 -- eval env (ELet [(sym, t, ex)] body =
 --   let envf = (sym, (eval ex)) : env
 --   in VLam sym body envf
