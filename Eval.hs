@@ -146,13 +146,12 @@ sexp2Exp (SList (func : arg : [])) = do
   return $ EApp func' arg'
 
 --Essai de sexp pour data
+sexp2Exp (SList ((SSym "data"): (SList (SList( (SSym var): [] ): []) ): body: [])) = do
+  body' <- sexp2Exp body
+  return $ EData [var] body'
 
--- sexp2Exp (SList ((Sym "data"): (SList (SList( (SSym var): [] ): []) ): body: [])) = do
---   body' <- sexp2Exp body
---   return $ EData [ EVar var] body
---
--- sexp2Exp _ = Left "Syntax Error : Ill formed Sexp"
---
+sexp2Exp _ = Left "Syntax Error : Ill formed Sexp"
+
 
 ---------------------------------------------------------------------------
 -- Fonction d'évaluation
@@ -232,7 +231,7 @@ typeCheck env (ELet [(sym, t, ex)] body) =
 
 typeCheck env (EData [t, sym] body) =
 
-  typeCheck ((sym,TData t):env) body
+  typeCheck ((sym, TData t):env) body
 
 -- typeCheck env (EData [t, [sym]] body) =
 --
