@@ -13,7 +13,7 @@ import Parseur
 ---------------------------------------------------------------------------
 data Type = TInt
           | TArrow Type Type
-          | TData Value
+          | TData Symbol
           deriving (Eq)
 
 instance Show Type where
@@ -35,6 +35,7 @@ data Exp = EInt Int
 
 data Value = VInt Int
            | VLam Symbol Exp Env
+           | VData Symbol
            | VPrim (Value -> Value)
 
 instance Show Value where
@@ -144,17 +145,14 @@ sexp2Exp (SList (func : arg : [])) = do
   arg' <- sexp2Exp arg
   return $ EApp func' arg'
 
-sexp2Exp _ = Left "Syntax Error : Ill formed Sexp"
+--Essai de sexp pour data
 
--- sexp2Exp (SList ((SSym "data"): (SList val : [])) ex) = do
---     val' <- sexp2Exp
---     rest <- sexp2Exp ex
---     return $ EData
+-- sexp2Exp (SList ((Sym "data"): (SList (SList( (SSym var): [] ): []) ): body: [])) = do
+--   body' <- sexp2Exp body
+--   return $ EData [ EVar var] body
 --
+-- sexp2Exp _ = Left "Syntax Error : Ill formed Sexp"
 --
--- sexp2Exp (SList ((SSym "data"): (SList val : [])) ex) = do
---     val' <- sexp2Exp ((SList (val1 : [])) ex)
---     return $ EData
 
 ---------------------------------------------------------------------------
 -- Fonction d'évaluation
@@ -183,11 +181,8 @@ eval env (EApp e1 e2) =
 eval env (ELet [(sym, t, ex)] body) =
   eval ((sym, (eval env ex)): env) body
 
---
--- eval env (EData [v] body) = do
---
---
---   return expression
+eval env (EData [t, sym] body) =
+  eval ((sym, VData t): env) body
 
 
 eval _ _ = error "Error: eval not possible"
@@ -235,8 +230,12 @@ typeCheck env (ELet [(sym, t, ex)] body) =
 
   typeCheck ((sym,t): env) body
 
-typeCheck env (EData [t, [sym]] body) = do
+typeCheck env (EData [t, sym] body) =
 
-  typeCheck ((sym:t):env) body
+  typeCheck ((sym,TData t):env) body
+
+-- typeCheck env (EData [t, [sym]] body) =
+--
+--   typeCheck ((sym:t):env) body
 
 typeCheck _ _ = error "Oups ..."
